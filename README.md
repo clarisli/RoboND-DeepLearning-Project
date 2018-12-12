@@ -2,38 +2,41 @@
 
 ## Deep Learning Project ##
 
-In this project, you will train a deep neural network to identify and track a target in simulation. So-called “follow me” applications like this are key to many fields of robotics and the very same techniques you apply here could be extended to scenarios like advanced cruise control in autonomous vehicles or human-robot collaboration in industry.
+The goal of this project is to train a deep neural network to identify and track a moving target using Fully Convolutional Network (FCN). So-called "follow me" applications. This network run real-time pixel-wise classification on images. The steps are following:
 
-[image_0]: ./docs/misc/sim_screenshot.png
-![alt text][image_0] 
+1. Download the training dataset and extract to the project `data` directory.
+2. Implement the solution in `model_training.ipynb`
+3. Train the network locally, or on [AWS](https://classroom.udacity.com/nanodegrees/nd209/parts/09664d24-bdec-4e64-897a-d0f55e177f09/modules/cac27683-d5f4-40b4-82ce-d708de8f5373/lessons/197a058e-44f6-47df-8229-0ce633e0a2d0/concepts/27c73209-5d7b-4284-8315-c0e07a7cd87f?contentVersion=1.0.0&contentLocale=en-us).
+4. Continue to experiment with the training data and network until attain the score desired.
+5. Once comfortable with performance on the training dataset, see how it performs in live simulation.
+
+[image1]: ./docs/misc/fcn.png
+[image2]: ./docs/misc/following.png
+[image3]: ./docs/misc/patrol_target.png
+[image4]: ./docs/misc/patrol_no_target.png
+[image5]: ./docs/misc/sim_screenshot.png
+
+![alt text][image5]
+
 
 ## Setup Instructions
-**Clone the repository**
-```
-$ git clone https://github.com/udacity/RoboND-DeepLearning.git
-```
 
 **Download the data**
 
 Save the following three files into the data folder of the cloned repository. 
 
-[Training Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/Lab/train.zip) 
-
-[Validation Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/Lab/validation.zip)
-
-[Sample Evaluation Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/Project/sample_evaluation_data.zip)
+* [Training Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/Lab/train.zip) 
+* [Validation Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/Lab/validation.zip)
+* [Sample Evaluation Data](https://s3-us-west-1.amazonaws.com/udacity-robotics/Deep+Learning+Data/Project/sample_evaluation_data.zip)
 
 **Download the QuadSim binary**
-
-To interface your neural net with the QuadSim simulator, you must use a version QuadSim that has been custom tailored for this project. The previous version that you might have used for the Controls lab will not work.
 
 The simulator binary can be downloaded [here](https://github.com/udacity/RoboND-DeepLearning/releases/latest)
 
 **Install Dependencies**
 
-You'll need Python 3 and Jupyter Notebooks installed to do this project.  The best way to get setup with these if you are not already is to use Anaconda following along with the [RoboND-Python-Starterkit](https://github.com/udacity/RoboND-Python-StarterKit).
+Make sure you have following installed:
 
-If for some reason you choose not to use Anaconda, you must install the following frameworks and packages on your system:
 * Python 3.x
 * Tensorflow 1.2.1
 * NumPy 1.11
@@ -47,115 +50,117 @@ If for some reason you choose not to use Anaconda, you must install the followin
 * transforms3d
 * PyQt4/Pyqt5
 
-## Implement the Segmentation Network
-1. Download the training dataset from above and extract to the project `data` directory.
-2. Implement your solution in model_training.ipynb
-3. Train the network locally, or on [AWS](https://classroom.udacity.com/nanodegrees/nd209/parts/09664d24-bdec-4e64-897a-d0f55e177f09/modules/cac27683-d5f4-40b4-82ce-d708de8f5373/lessons/197a058e-44f6-47df-8229-0ce633e0a2d0/concepts/27c73209-5d7b-4284-8315-c0e07a7cd87f?contentVersion=1.0.0&contentLocale=en-us).
-4. Continue to experiment with the training data and network until you attain the score you desire.
-5. Once you are comfortable with performance on the training dataset, see how it performs in live simulation!
-
-## Collecting Training Data ##
-A simple training dataset has been provided in this project's repository. This dataset will allow you to verify that your segmentation network is semi-functional. However, if your interested in improving your score,you may want to collect additional training data. To do it, please see the following steps.
-
-The data directory is organized as follows:
-```
-data/runs - contains the results of prediction runs
-data/train/images - contains images for the training set
-data/train/masks - contains masked (labeled) images for the training set
-data/validation/images - contains images for the validation set
-data/validation/masks - contains masked (labeled) images for the validation set
-data/weights - contains trained TensorFlow models
-
-data/raw_sim_data/train/run1
-data/raw_sim_data/validation/run1
-```
-
-### Training Set ###
-1. Run QuadSim
-2. Click the `DL Training` button
-3. Set patrol points, path points, and spawn points. **TODO** add link to data collection doc
-3. With the simulator running, press "r" to begin recording.
-4. In the file selection menu navigate to the `data/raw_sim_data/train/run1` directory
-5. **optional** to speed up data collection, press "9" (1-9 will slow down collection speed)
-6. When you have finished collecting data, hit "r" to stop recording.
-7. To reset the simulator, hit "`<esc>`"
-8. To collect multiple runs create directories `data/raw_sim_data/train/run2`, `data/raw_sim_data/train/run3` and repeat the above steps.
+The best way to get setup with these is to use Anaconda following along with the [RoboND-Python-Starterkit](https://github.com/udacity/RoboND-Python-StarterKit).
 
 
-### Validation Set ###
-To collect the validation set, repeat both sets of steps above, except using the directory `data/raw_sim_data/validation` instead rather than `data/raw_sim_data/train`.
+## Fully Convolutional Network
 
-### Image Preprocessing ###
-Before the network is trained, the images first need to be undergo a preprocessing step. The preprocessing step transforms the depth masks from the sim, into binary masks suitable for training a neural network. It also converts the images from .png to .jpeg to create a reduced sized dataset, suitable for uploading to AWS. 
-To run preprocessing:
-```
-$ python preprocess_ims.py
-```
-**Note**: If your data is stored as suggested in the steps above, this script should run without error.
+A typical CNN's (Convolutional Neural Network) fully connected layers have few disadvantages:
 
-**Important Note 1:** 
+* don't preserve spatial information
+* constrain the network's input size
 
-Running `preprocess_ims.py` does *not* delete files in the processed_data folder. This means if you leave images in processed data and collect a new dataset, some of the data in processed_data will be overwritten some will be left as is. It is recommended to **delete** the train and validation folders inside processed_data(or the entire folder) before running `preprocess_ims.py` with a new set of collected data.
+FCN (Fully Convolutional Networks) can do what CNNs cannot do - it preserve the spatial information throughout the entire network, and will work with images of any size.
 
-**Important Note 2:**
+FCN is comprised of two parts: encoder and decoder.
 
-The notebook, and supporting code assume your data for training/validation is in data/train, and data/validation. After you run `preprocess_ims.py` you will have new `train`, and possibly `validation` folders in the `processed_ims`.
-Rename or move `data/train`, and `data/validation`, then move `data/processed_ims/train`, into `data/`, and  `data/processed_ims/validation`also into `data/`
+![alt text][image1] 
 
-**Important Note 3:**
+### FCN: Encoder
 
-Merging multiple `train` or `validation` may be difficult, it is recommended that data choices be determined by what you include in `raw_sim_data/train/run1` with possibly many different runs in the directory. You can create a temporary folder in `data/` and store raw run data you don't currently want to use, but that may be useful for later. Choose which `run_x` folders to include in `raw_sim_data/train`, and `raw_sim_data/validation`, then run  `preprocess_ims.py` from within the 'code/' directory to generate your new training and validation sets. 
+The encoder is a convolution network that reduces to a deeper 1x1 convolution layer, in contrast to a flat fully connected layer that would be used for basic classification of images. This difference has the effect of preserving spacial information from the image.
+
+In order to increase the encoder's efficiency, **separable convolutions** was used to reduce the number of parameters.
+
+I further optimized the network with **batch normalization** by normalizing the output(i.e., input to the next layer) of each convolutional layer. This has following advantages:
+
+* Networks train faster
+* Allows higher learning rates
+
+I did this in the function `separable_conv2d_batchnorm()`, cell 2 of `model.training.ipynb`.
+
+### FCN: Decoder
+
+The decoder upscales the output of encoder such that the network's output is the same size as the original image. 
+
+Instead of transposed convolutions, I used **bilinear upsampling** to speed up the upsampling performance - note that this method is prone to lose some finer details. I did this in the function `bilinear_upsample()` in cell 3 of `model.training.ipynb`.
+
+### FCN: Skip Connection
+
+One effect of convolution or encoding is it narrows down the scope by looking closely at some pictures and lose the bigger pictre as a result. So even if we decode the output of the encoder back to the original image size, some information has been lost.
+
+Skip connection is a way to retain information by connectin the output of one layer to a non-adjacent layer.
+
+To implement the skip connection, I concatenate two layers, the upsampled layer and a layer with more spatial information than the upsampled one. Then I added some regular convolution layers for the model to be able to learn the finer spatial details.
+
+I did this in the function `decoder_block()` in cell 5 of `model_training.ipynb`.
+
+### FCN: Model
+
+I started with simple models with a single encoder layer and a single decoder layer, and then added more layers to it as needed. I setup the model in the function `fcn_model()` in cell 6 of `model_training.ipynb`.
 
 
-## Training, Predicting and Scoring ##
-With your training and validation data having been generated or downloaded from the above section of this repository, you are free to begin working with the neural net.
+### FCN: Hyperparameters
 
-**Note**: Training CNNs is a very compute-intensive process. If your system does not have a recent Nvidia graphics card, with [cuDNN](https://developer.nvidia.com/cudnn) and [CUDA](https://developer.nvidia.com/cuda) installed , you may need to perform the training step in the cloud. Instructions for using AWS to train your network in the cloud may be found [here](https://classroom.udacity.com/nanodegrees/nd209/parts/09664d24-bdec-4e64-897a-d0f55e177f09/modules/cac27683-d5f4-40b4-82ce-d708de8f5373/lessons/197a058e-44f6-47df-8229-0ce633e0a2d0/concepts/27c73209-5d7b-4284-8315-c0e07a7cd87f?contentVersion=1.0.0&contentLocale=en-us)
+| Hyperparameter   | Value |
+| ---------------- | ----- |
+| Batch Size       | 96    |
+| Step per Epoch   | 43    |
+| Validation Steps | 12    |
+| Learning Rate    | 0.001 |
+| Number of Epochs | 48    |
 
-### Training your Model ###
-**Prerequisites**
-- Training data is in `data` directory
-- Validation data is in the `data` directory
-- The folders `data/train/images/`, `data/train/masks/`, `data/validation/images/`, and `data/validation/masks/` should exist and contain the appropriate data
+I set these values in cell 8 of `model_training.ipynb`.
 
-To train complete the network definition in the `model_training.ipynb` notebook and then run the training cell with appropriate hyperparameters selected.
+#### Batch Size
+Batch size is the number of training samples/images that get propagated through the network in a single pass. This value is limited by the available GPU memory, I started with 32, and pushed it to 96.
 
-After the training run has completed, your model will be stored in the `data/weights` directory as an [HDF5](https://en.wikipedia.org/wiki/Hierarchical_Data_Format) file, and a configuration_weights file. As long as they are both in the same location, things should work. 
+#### Steps per Epoch
 
-**Important Note** the *validation* directory is used to store data that will be used during training to produce the plots of the loss, and help determine when the network is overfitting your data. 
+This is the number of batches of training images that go through the network in 1 epoch. I set it to a value based on the total number of images in training dataset divided by the chosen batch size.
 
-The **sample_evalution_data** directory contains data specifically designed to test the networks performance on the FollowME task. In sample_evaluation data are three directories each generated using a different sampling method. The structure of these directories is exactly the same as `validation`, and `train` datasets provided to you. For instance `patrol_with_targ` contains an `images` and `masks` subdirectory. If you would like to the evaluation code on your `validation` data a copy of the it should be moved into `sample_evaluation_data`, and then the appropriate arguments changed to the function calls in the `model_training.ipynb` notebook.
+#### Validation Steps
 
-The notebook has examples of how to evaulate your model once you finish training. Think about the sourcing methods, and how the information provided in the evaluation sections relates to the final score. Then try things out that seem like they may work. 
+number of batches of validation images that go through the network in 1 epoch. Similar to the steps per epoch, I set this value to be the total number of validation images divided by the chosen batch size.
 
-## Scoring ##
+#### Learning Rate
 
-To score the network on the Follow Me task, two types of error are measured. First the intersection over the union for the pixelwise classifications is computed for the target channel. 
+Learning rate scales the magnitude of the weight updates in gradient descent in order to minimize the network's loss. If set too low, the training will progress very slow; if set to high, there will be strong fluctuation in the loss function and may fail to converge to the minimum. I started with a large value, 0.1, then tried exponentially lower values: 0.01, 0.001, and found 0.001 to be optimal.
 
-In addition to this we determine whether the network detected the target person or not. If more then 3 pixels have probability greater then 0.5 of being the target person then this counts as the network guessing the target is in the image. 
+#### Number of Epochs
 
-We determine whether the target is actually in the image by whether there are more then 3 pixels containing the target in the label mask. 
+The number of times the entire training dataset gets propagated through the network. As the number of epochs increase, the network goes from underfitting to optimal to overfitting. I trained for 48 epochs.
 
-Using the above the number of detection true_positives, false positives, false negatives are counted. 
+### Limitation of Current Model
 
-**How the Final score is Calculated**
+The model was trained with 3 classes:
 
-The final score is the pixelwise `average_IoU*(n_true_positive/(n_true_positive+n_false_positive+n_false_negative))` on data similar to that provided in sample_evaulation_data
+1. the Hero (target person)
+2. other people
+3. everything else
 
-**Ideas for Improving your Score**
+In order to following another object (dog, cat, car, etc.) instead of a human, the model will have to work with more classes - this means to collect and label more images including the additional desired classes.
 
-Collect more data from the sim. Look at the predictions think about what the network is getting wrong, then collect data to counteract this. Or improve your network architecture and hyperparameters. 
+## Results
 
-**Obtaining a Leaderboard Score**
+The network achieved an accuracy of **43.4%** using the Intersection over Union (IoU) metric.
 
-Share your scores in slack, and keep a tally in a pinned message. Scores should be computed on the sample_evaluation_data. This is for fun, your grade will be determined on unreleased data. If you use the sample_evaluation_data to train the network, it will result in inflated scores, and you will not be able to determine how your network will actually perform when evaluated to determine your grade.
+Below are the predictions for three scenarios made from the evaluation dataset. These image columns are in following order: input image from camera(left), ground truth(center), the network's prediction(right).
 
-## Experimentation: Testing in Simulation
-1. Copy your saved model to the weights directory `data/weights`.
-2. Launch the simulator, select "Spawn People", and then click the "Follow Me" button.
-3. Run the realtime follower script
-```
-$ python follower.py my_amazing_model.h5
-```
+* **Following:** the network identified the hero and following him/her.
 
-**Note:** If you'd like to see an overlay of the detected region on each camera frame from the drone, simply pass the `--pred_viz` parameter to `follower.py`
+![alt text][image2] 
+
+* **Patrol with Target:** when the hero is visible from a distance.
+
+![alt text][image3] 
+
+* **Patrol without Target:** When the hero is not visible.
+
+![alt text][image4] 
+
+
+## Future Works
+
+* Collect more training data to improve the accuracy.
+* Use pre-trained networks in encoder instead.
